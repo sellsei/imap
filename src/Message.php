@@ -14,6 +14,8 @@ class Message extends Message\Part
 {
     private $headers;
     private $attachments;
+    private $rawHeaders;
+    private $rawBody;
 
     /**
      * @var boolean
@@ -245,6 +247,48 @@ class Message extends Message\Part
         }
 
         return $this->attachments;
+    }
+
+    /**
+     * Get message raw headers
+     *
+     * @return string
+     */
+    public function getRawHeaders()
+    {
+        if (null === $this->rawHeaders) {
+            $this->rawHeaders = imap_fetchheader($this->stream, imap_msgno($this->stream, $this->messageNumber), FT_PREFETCHTEXT);
+        }
+
+        return $this->rawHeaders;
+    }
+
+    /**
+     * Get message raw body
+     *
+     * @return string
+     */
+    public function getRawBody()
+    {
+        if (null === $this->rawBody) {
+            $this->rawBody = imap_body(
+                $this->stream,
+                imap_msgno($this->stream, $this->messageNumber),
+                $this->keepUnseen ? \FT_PEEK : 0
+            );
+        }
+
+        return $this->rawBody;
+    }
+
+    /**
+     * Get raw message
+     *
+     * @return string | null
+     */
+    public function getRawMessage()
+    {
+        return $this->getRawHeaders() . $this->getRawBody();
     }
 
     /**
